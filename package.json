@@ -5,7 +5,8 @@
   "main": "SovereignAgent.js",
   "scripts": {
     "start": "node test.js",
-    "test": "node test.js"
+    "test": "node test.js",
+    "register": "node scripts/registerAgent.js"
   },
   "keywords": [],
   "author": "normancomics",
