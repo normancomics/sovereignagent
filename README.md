@@ -1,226 +1,255 @@
-# SovereignAgent
+# PhantomOperator
 
-> **Created by** [normancomics](https://github.com/normancomics) — `normancomics.eth` · `normancomics.base.eth` · `normancomics.reserve.superfluid.eth` · [`0x3d95d4a6dbae0cd0643a82b13a13b08921d6adf7`](https://basescan.org/address/0x3d95d4a6dbae0cd0643a82b13a13b08921d6adf7)
+Created by normancomics — normancomics.eth · normancomics.base.eth · normancomics.reserve.superfluid.eth · 0x3d95d4a6dbae0cd0643a82b13a13b08921d6adf7
 
-**SovereignAgent — automated privacy-removal orchestration with real-time Superfluid payouts on Base.**
+**PhantomOperator** is a **multi-operator privacy and OPSEC framework** for people who want to *vanish* from data brokers, minimize surveillance, and maintain stealth online.
 
-SovereignAgent coordinates secure, sandboxed agents to:
-
-- Automate **data-broker opt-outs** and prioritized threat remediation.
-- Handle **real-time micropayments** via **Superfluid USDCx** on **Base** (streams & IDAs).
-- Provide on-chain identity + reputation via Base registries.
-- x402 payment middleware — callers pay per skill invocation.
-- Listed on CryptoSkill and the Coinbase CDP Bazaar for agent-to-agent discovery.
-
----
-
-## Step-by-Step Setup & Registration
-
-### Step 1 — Configure environment
-
-Copy `.env.example` to `.env` and fill in every value. **Never commit `.env`.**
-
-```bash
-cp .env.example .env
-# Edit .env with your real wallet key, RPC URL, and API keys
-```
-
-Key variables to fill in:
-
-| Variable | Where to get it |
-|---|---|
-| `PRIVATE_KEY` | Your wallet private key (Base mainnet, must hold ETH for gas) |
-| `RPC_URL` | `https://mainnet.base.org` or an Alchemy/Infura Base endpoint |
-| `SOVEREIGN_AGENT_ADDRESS` | Your wallet's public address (derived from `PRIVATE_KEY`) |
-| `CRYPTOSKILL_API_KEY` | Sign up at https://cryptoskill.org |
-| `CDP_API_KEY_NAME` / `CDP_API_KEY_PRIVATE_KEY` | https://portal.cdp.coinbase.com |
-| `AGENT_SERVER_URL` | Public URL of your running `server.js` (use ngrok for local dev) |
-| `AGENT_METADATA_URI` | Public URL of your `agent-manifest.json` (GitHub raw URL works) |
-
-### Step 2 — Install dependencies
-
-```bash
-npm ci
-```
-
-### Step 3 — Run the registration script
-
-This single script handles on-chain identity, reputation, and CryptoSkill registration:
-
-```bash
-npm run register
-# or: node scripts/register.js
-```
-
-What it does:
-1. **Base Identity Registry** (`0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`) — calls `registerAgent(metadataURI)` to store your agent's on-chain identity.
-2. **Base Reputation Registry** (`0x8004BAa17C55a88189AE136b182e5fdA19dE9b63`) — calls `initializeAgent()` to create your reputation record.
-3. **CryptoSkill** — POSTs your agent profile and all skills from `agent-manifest.json` to the CryptoSkill API. (Skipped if `CRYPTOSKILL_API_KEY` not set.)
-4. **Verification** — reads back both registry contracts to confirm registration succeeded and prints BaseScan links.
-
-### Step 4 — Start the x402 payment server
-
-```bash
-npm start
-# or: node server.js
-```
-
-This starts an HTTP server with x402 payment middleware on the port in your `.env` (`PORT=3000` by default). Callers must attach a valid payment proof in the `X-PAYMENT` header to use paid endpoints.
-
-Available endpoints:
-
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| `GET` | `/health` | Free | Liveness check |
-| `GET` | `/manifest` | Free | Returns `agent-manifest.json` |
-| `POST` | `/skills/threat-scan` | 1.00 USDCx | Web threat scan |
-| `POST` | `/skills/data-removal` | 5.00 USDCx | Data broker opt-out |
-| `POST` | `/skills/full-privacy-sweep` | 10.00 USDCx | Full scan + removal |
-| `POST` | `/skills/opsec-score` | 5.00 USDCx | Multi-vector OPSEC exposure score |
-| `POST` | `/skills/breach-check` | 2.00 USDCx | HIBP k-anonymity breach lookup |
-| `POST` | `/skills/metadata-audit` | 1.00 USDCx | HTTP/HTML metadata privacy audit |
-
-For local development, expose the server publicly with [ngrok](https://ngrok.com):
-```bash
-ngrok http 3000
-# Copy the https URL into AGENT_SERVER_URL in your .env
-```
-
-### Step 5 — List on the Coinbase CDP x402 Bazaar
-
-```bash
-npm run list-bazaar
-# or: node scripts/list-on-bazaar.js
-```
-
-This submits your agent to the [Coinbase CDP Bazaar](https://docs.cdp.coinbase.com/x402/bazaar), making it discoverable by other agents and users. Requires `AGENT_SERVER_URL`, `CDP_API_KEY_NAME`, and `CDP_API_KEY_PRIVATE_KEY` to be set.
-
-### Step 6 — Verify on-chain
-
-After the registration transactions confirm (~5–30 seconds on Base mainnet), verify on BaseScan:
-
-- Identity Registry: https://basescan.org/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432#readContract
-  - Call `getAgentMetadata(yourAddress)` — should return your `AGENT_METADATA_URI`
-  - Call `isRegistered(yourAddress)` — should return `true`
-- Reputation Registry: https://basescan.org/address/0x8004BAa17C55a88189AE136b182e5fdA19dE9b63#readContract
-  - Call `getReputation(yourAddress)` — should return your initialized record
-  - Call `isInitialized(yourAddress)` — should return `true`
-
-### Quick Test (optional)
-
-SovereignAgent ships with a simple example runner:
-
-```bash
-node test.js
-```
-
-This exercises the orchestrator's basic flows (scan/threat analysis, Superfluid wiring) and logs output so you can confirm everything is wired correctly.
+- Agentic swarms coordinate:
+  - Automated data-broker opt-outs and prioritized threat remediation
+  - OSINT / PII threat scans
+  - OPSEC exposure scoring
+  - Metadata and tracking audits
+  - Breach checks via k-anonymity
+- Monetized on **Base** (USDCx / ERC-20 via x402).
+- Optional **Monero payments** for users who do not want any public-chain correlation.
+- Designed for integration with RAG and MCP so other agents / LLMs can call PhantomOperator as a backend.
+- Intended for listing on **CryptoSkill**, **Coinbase CDP Bazaar**, **8004scan.io**, and other agent registries.
 
 ---
 
-## Public API
+## Architecture Overview
 
-SovereignAgent exposes a JavaScript API:
+PhantomOperator is **not** a single agent. It is an **agentic framework** composed of cooperating operators and swarms.
 
-- `scanExposures(user)` – run threat / exposure search.
-- `scheduleOptOuts(exposures, user)` – schedule broker opt-outs.
-- `openRewardStream(to, flowRate)` – open a Superfluid USDCx stream on Base.
-- `stopRewardStream(to)` – stop an existing stream.
-- `runPrivacyWorkflow(user)` – end-to-end "scan + schedule opt-outs" workflow.
+### 1. OrchestratorOperator (Core Brain)
 
-See [`SovereignAgent.js`](./SovereignAgent.js) and `skills/sovereignagent.md` for details.
+The `OrchestratorOperator` coordinates everything:
+
+- Receives high-level intents via:
+  - HTTP API (`/skills/...`)
+  - Future: scheduled jobs (Postgres + `pg_cron`)
+  - Future: MCP tool calls
+- Decomposes work into sub-tasks:
+  - Which data brokers to target
+  - Which OSINT surfaces to scan
+  - Which breach / metadata checks to run
+- Delegates tasks to domain operators.
+- Tracks job status and aggregates results for the caller.
+
+### 2. Domain Operators
+
+Each operator focuses on a specific piece of the privacy / OPSEC surface:
+
+- **SearchOperator**  
+  (backed by `SearchAgent`)  
+  OSINT / PII search and threat discovery.
+
+- **BrokerOperator**  
+  (backed by `BrokerAgent`)  
+  Data-broker opt-outs and prioritized threat remediation.
+
+- **OpsecOperator**  
+  (backed by `OpsecAgent`)  
+  Multi-vector OPSEC exposure scoring (handles, emails, names).
+
+- **BreachOperator**  
+  (backed by `BreachAgent`)  
+  Email/password breach checks via k-anonymity APIs.
+
+- **MetadataOperator**  
+  (backed by `MetadataAgent`)  
+  HTTP/HTML metadata, trackers, and fingerprinting audits.
+
+Existing `/skills/*` endpoints already map to these capabilities; over time they will be internally routed through `OrchestratorOperator`.
+
+### 3. Sub-Operators & Swarms (Planned)
+
+PhantomOperator extends into swarms of smaller operators:
+
+- **Broker-specific sub-operators**
+  - One per broker (Spokeo, Whitepages, BeenVerified, etc.).
+  - Encapsulates URLs, form flows, and required PII.
+- **Scraper sub-operators**
+  - Focused crawlers / scrapers for specific OSINT surfaces.
+- **Swarms**
+  - A swarm is a set of sub-operators executing in parallel across a target identity.
+  - Triggered by:
+    - Direct calls like `POST /skills/full-privacy-sweep`
+    - Scheduled pg_cron jobs (e.g. weekly sweeps)
+    - Events (e.g. a new breach detection).
+
+### 4. Storage, Jobs & Scheduling (Planned)
+
+Planned job system (optional but recommended):
+
+- **Postgres** as a central store:
+  - `jobs` table — queued tasks with type, payload, status, timestamps.
+  - `job_results` table — normalized results per operator run.
+- **`pg_cron`** for scheduling recurring tasks:
+  - e.g. daily OSINT sweeps, weekly broker re-checks, breach monitoring.
+- **Worker processes**:
+  - One or more Node.js workers poll `jobs` where `status = 'pending'`,
+    delegate to operators, and write back `status` and results.
+
+PhantomOperator runs as a regular Node.js HTTP server; Postgres is only required when you enable scheduled jobs and persistence.
 
 ---
 
-## File Reference
+## Payments & Monetization
 
+### On-chain (Base via x402)
+
+PhantomOperator uses an x402-compatible payment middleware (HTTP 402 Payment Required):
+
+- For a paid skill:
+  1. Client calls `POST /skills/{id}` without payment.
+  2. Server responds with `402` and a JSON x402 descriptor:
+     - network: Base mainnet
+     - asset: payment token (e.g. USDCx)
+     - payTo: receiver address
+     - maxAmountRequired: skill price
+  3. Client pays and submits a signed proof in the `X-PAYMENT` header.
+  4. PhantomOperator validates the proof and serves the response.
+
+See [`server.js`](server.js) for:
+
+- `SKILL_PRICES`
+- `validatePayment(...)`
+- x402 enforcement in `handlePaidSkill(...)`
+
+### Monero (True Privacy Path)
+
+For users who do **not** want any public-chain trace:
+
+- Primary Monero address:
+
+  `83povooYdUgEArc13ZzaVp5vqGpDpKJ6WJ971NL94sbRcneqBtXB7N3XLN57v1fqddbinPjYCcwjk7AkrrwVJupFNU84XCq`
+
+#### Intended Monero Flow (Design)
+
+1. Client requests a Monero quote:
+
+   `POST /billing/monero-quote`  
+   `{ "skillId": "full-privacy-sweep" }`
+
+2. PhantomOperator (or a trusted Monero bridge service) returns:
+
+   - XMR amount
+   - Monero address or subaddress
+   - One-time invoice token.
+
+3. Client pays from their Monero wallet.
+
+4. Bridge service detects payment and issues a signed proof (JSON/JWT) bound to the invoice token.
+
+5. Client calls `POST /skills/{id}` with:
+
+   - `X-PAYMENT-METHOD: monero`
+   - `X-PAYMENT: <base64(moneroProofJson)>`
+
+6. PhantomOperator verifies the proof via the bridge:
+
+   - If valid and unused → executes the skill.
+   - Otherwise → returns `402` with payment instructions.
+
+> Implementation detail: Monero wallet/node operations are intended to run in a separate service; this repo focuses on integration and validation hooks.
+
+---
+
+## RAG & MCP Integration
+
+PhantomOperator can be used as a **back-end OPSEC engine** for other agents via RAG and MCP.
+
+### RAG (Retrieval-Augmented Generation)
+
+Two retrieval layers:
+
+1. **Broker / Legal Knowledge**
+   - Vector index of:
+     - Broker privacy policies
+     - Opt-out documentation
+     - Data protection laws (GDPR, CCPA, etc.).
+   - Operators query this index to generate:
+     - Correct removal flows
+     - Compliant letters / emails / webform payloads.
+
+2. **User Context**
+   - Per-identity “case file”:
+     - Known brokers with profiles removed
+     - Successful / pending removals
+     - Preferred channels and previous findings.
+   - RAG ensures each new action builds on history; reduces redundant work.
+
+### MCP (Model Context Protocol)
+
+PhantomOperator exposes skills as MCP tools, so LLMs and agent frameworks can call it directly:
+
+Planned MCP tools (examples):
+
+- `phantom_threat_scan`
+- `phantom_data_removal`
+- `phantom_full_privacy_sweep`
+- `phantom_opsec_score`
+- `phantom_breach_check`
+- `phantom_metadata_audit`
+
+MCP manifests and tool schemas live under `/mcp/` and map to:
+
+- HTTP endpoints (e.g. `/skills/threat-scan`)
+- JSON parameter/response schemas
+- Pricing hints (x402 + Monero paths)
+
+---
+
+## Agent Registries & Discovery
+
+PhantomOperator is built to integrate with:
+
+- **CryptoSkill** (x402 skill registry)
+- **Coinbase CDP Bazaar** (agent registry on Base)
+- **8004scan.io** (autonomous agent explorer)
+- Other agent registries.
+
+Registry manifests live under:
+
+```text
+/registry-manifests
+  cryptoskill.json
+  cdp-bazaar.json
+  8004scan.json
 ```
-sovereignagent/
-├── agent-manifest.json         ← Agent identity + skills (publish this publicly)
-├── abis/
-│   ├── IdentityRegistry.json   ← ABI for Base Identity Registry
-│   └── ReputationRegistry.json ← ABI for Base Reputation Registry
-├── scripts/
-│   ├── register.js             ← Steps 2+3+4: on-chain + CryptoSkill registration
-│   └── list-on-bazaar.js       ← Step 5: CDP Bazaar listing
-├── server.js                   ← x402 payment server (Step 4)
-├── middleware/
-│   └── security.js             ← Rate limiter, security headers, input sanitizer
-├── services/
-│   ├── RegistryService.js      ← Base Identity + Reputation registry interactions
-│   ├── CryptoSkillService.js   ← CryptoSkill API integration
-│   ├── RagService.js           ← Zero-dependency RAG retrieval layer
-│   └── SuperfluidService.js    ← Superfluid payment streaming (Base mainnet)
-├── agents/
-│   ├── SearchAgent.js          ← Web threat scanner + RAG reranking
-│   ├── BrokerAgent.js          ← Data broker opt-out (placeholder)
-│   ├── OpsecAgent.js           ← Multi-vector OPSEC exposure scoring
-│   ├── BreachAgent.js          ← HIBP k-anonymity breach lookup
-│   └── MetadataAgent.js        ← HTTP/HTML metadata privacy audit
-├── SovereignAgent.js           ← Main orchestrator
-├── test.js                     ← Quick smoke test (Superfluid flow only)
-├── .env.example                ← All required environment variables
-└── .github/workflows/
-    └── superfluid-test.yml     ← GitHub Actions CI
-```
+
+Each manifest defines:
+
+- Name, description, maintainer
+- Public base URL
+- List of skills, paths, and methods
+- Chain (Base), token address, and payment receiver
+- Optional Monero payment details.
+
+Your deployment just needs to expose:
+
+- `GET /health`
+- `GET /manifest`
+
+and host at a stable public URL.
 
 ---
 
-## Skills
+## HTTP API (Current)
 
-See the [`skills/`](./skills) directory for detailed skill docs:
+Public endpoints:
 
-- `skills/sovereignagent.md` — top-level SovereignAgent skill.
-- `skills/search-agent.md` — Threat & Exposure Search sub-skill.
-- `skills/broker-agent.md` — Data-Broker Automation sub-skill (beta).
-- `skills/superfluid-streaming.md` — Superfluid USDCx streaming sub-skill.
+- `GET  /health`
+- `GET  /manifest`
 
----
+Paid skill endpoints (x402 / Monero):
 
-## Registration & Priority Payouts
+- `POST /skills/threat-scan`
+- `POST /skills/data-removal`
+- `POST /skills/full-privacy-sweep`
+- `POST /skills/opsec-score`
+- `POST /skills/breach-check`
+- `POST /skills/metadata-audit`
 
-Want **priority payouts** and **featured placement** in SovereignAgent-compatible registries and listings?
-
-1. Open a **"Register Sovereign Agent"** issue using the provided template:
-   - `.github/ISSUE_TEMPLATE/register_agent.md`
-2. Include your **ENS / on-chain identity**, for example:
-   - `normancomics.base.eth`
-   - or a Base address
-
-This helps:
-
-- Associate your agent deployment with your on-chain identity.
-- Qualify for future **priority payouts**, **beta A/B tests**, and **featured slots** in supported agent registries.
-
----
-
-## Security Notes
-
-- **Never commit `.env`** — it is already in `.gitignore`.
-- For GitHub Actions CI, add all secrets to the repository's **Secrets** settings.
-- `PRIVATE_KEY` should belong to a dedicated agent wallet, not your personal wallet.
-- Run `npm audit` before publishing and address any critical findings.
-- Treat any external broker endpoints and integrations as untrusted:
-  - Validate and sanitize inputs/outputs.
-  - Avoid leaking identifying data beyond what's strictly necessary for opt-out flows.
-
----
-
-## Network
-
-All on-chain activity targets **Base mainnet** (Chain ID `8453`).
-The old `Base Goerli` testnet (Chain ID `84531`) is deprecated and no longer works.
-For staging, use **Base Sepolia** (Chain ID `84532`) — update `CHAIN_ID` and `RPC_URL` accordingly.
-
----
-
-## SEO / Quick Pitch
-
-> **Automated opt-out workflows + Superfluid streaming payouts on Base.**
-> Join the SovereignAgent beta for priority payouts, featured listings, and agent-native privacy orchestration.
-
-SovereignAgent is designed to plug into on-chain agent ecosystems, skill registries, and Base-native x402 payment flows, making it a natural fit for:
-
-- Privacy-focused AI agents
-- Data removal / opt-out services
-- Agent swarms that need both **privacy** and **payment** primitives on Base.
+See [`server.js`](server.js) for expected request bodies and validation.
