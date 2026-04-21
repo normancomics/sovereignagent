@@ -253,3 +253,70 @@ Paid skill endpoints (x402 / Monero):
 - `POST /skills/metadata-audit`
 
 See [`server.js`](server.js) for expected request bodies and validation.
+
+---
+
+## Solana Deployment
+
+PhantomOperator includes a native **Solana BPF/SBF program** written in Rust
+that mirrors the skill catalogue on-chain, accepting SOL payments and recording
+every invocation in a per-operator registry account.
+
+### Quick start
+
+1. **Install prerequisites**
+
+   ```bash
+   # Rust toolchain
+   curl https://sh.rustup.rs -sSf | sh
+
+   # Solana CLI tool suite
+   sh -c "$(curl -sSfL https://release.solana.com/stable/install)"
+   ```
+
+2. **Verify the toolchain**
+
+   ```bash
+   ./solana/scripts/check-solana.sh
+   ```
+
+3. **Build the program**
+
+   ```bash
+   ./solana/scripts/build.sh
+   # Compiled binary: solana/deploy/phantom_operator.so
+   ```
+
+4. **Deploy to devnet**
+
+   ```bash
+   ./solana/scripts/deploy.sh --cluster devnet
+   ```
+
+   The script prints the **Program ID**. Add it to your `.env`:
+
+   ```env
+   SOLANA_PROGRAM_ID=<printed-program-id>
+   ```
+
+5. **Initialise the on-chain registry** (once per operator)
+
+   ```bash
+   npm install @solana/web3.js
+   node scripts/solana-invoke.js init-registry
+   ```
+
+6. **Invoke a skill from Node.js**
+
+   ```bash
+   node scripts/solana-invoke.js invoke-skill --skill-id 0 --amount 1000000
+   ```
+
+7. **Deploy to mainnet-beta**
+
+   ```bash
+   ./solana/scripts/deploy.sh --cluster mainnet-beta
+   ```
+
+See **[`solana/README.md`](solana/README.md)** for the full guide, including
+skill IDs, upgrade instructions, environment variables, and troubleshooting.
