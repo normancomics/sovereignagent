@@ -1,0 +1,33 @@
+[package]
+name = "phantom-operator"
+version = "0.1.0"
+edition = "2021"
+description = "PhantomOperator on-chain skill registry and payment program for Solana"
+license = "MIT"
+
+# Build as a shared library (BPF/SBF .so) AND a regular lib for unit tests.
+[lib]
+name = "phantom_operator"
+crate-type = ["cdylib", "lib"]
+
+# Disable the default entrypoint when running unit tests so that
+# solana_program_test can inject its own.
+[features]
+no-entrypoint = []
+test-sbf = []
+
+[dependencies]
+borsh = "0.10"
+solana-program = "1.18"
+
+[dev-dependencies]
+solana-program-test = "1.18"
+solana-sdk = "1.18"
+tokio = { version = "1", features = ["full"] }
+
+# Optimise for small binary size — important for the 10 MB BPF limit.
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+lto = "fat"
+codegen-units = 1

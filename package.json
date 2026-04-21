@@ -7,7 +7,11 @@
     "start": "node server.js",
     "test": "node test.js",
     "register": "node scripts/register.js",
-    "list-bazaar": "node scripts/list-on-bazaar.js"
+    "list-bazaar": "node scripts/list-on-bazaar.js",
+    "solana:check": "bash solana/scripts/check-solana.sh",
+    "solana:build": "bash solana/scripts/build.sh",
+    "solana:deploy": "bash solana/scripts/deploy.sh",
+    "solana:invoke": "node scripts/solana-invoke.js"
   },
   "keywords": [],
   "author": "normancomics <normancomics.eth> (https://github.com/normancomics)",
@@ -18,5 +22,8 @@
     "cheerio": "1.0.0-rc.12",
     "dotenv": "16.0.3",
     "ethers": "5.7.2"
+  },
+  "optionalDependencies": {
+    "@solana/web3.js": "^1.98.4"
   }
 }
